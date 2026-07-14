@@ -24,7 +24,7 @@ X = df.iloc[:, 1:-1].values
 
 # Suddivisione in training e testing set:
 # Usiamo stratify=y per bilanciare classi
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.35, random_state=0, stratify=y)
 
 
 #Scalamento dei dati
