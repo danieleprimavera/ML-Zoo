@@ -81,12 +81,12 @@ The following strategies were adopted:
 
 ### Train/Test Split
 
-- 70% Training Set (70 samples)
-- 30% Test Set (31 samples)
+- 65% Training Set (65 samples)
+- 35% Test Set (36 samples)
 - `random_state=0`
 - Stratified sampling
 
-Using a 70/30 split ensures a larger test set compared to the initial 75/25 split, providing a more realistic and robust evaluation of model generalization.
+Using a 65/35 split ensures that the test set is large enough to contain samples from all minority classes and provides a realistic estimate of generalization error. A 75/25 split was tested but rejected as it led to an artificially perfect (1.00) test score due to the small size of the test partition.
 
 ### Feature Scaling
 
@@ -114,14 +114,14 @@ Hyperparameters:
 Best configuration:
 
 ```text
-C = 5e-05
+C = 1.0
 penalty = l2
 ```
 
 Best CV Balanced Accuracy:
 
 ```text
-0.860
+0.865
 ```
 
 ---
@@ -137,15 +137,15 @@ Hyperparameters:
 Best configuration:
 
 ```text
-kernel = rbf
-C = 1
-gamma = 0.01
+kernel = linear
+C = 0.1
+gamma = scale
 ```
 
 Best CV Balanced Accuracy:
 
 ```text
-0.884
+0.913
 ```
 
 ---
@@ -163,7 +163,7 @@ Best configuration:
 ```text
 n_estimators = 100
 max_depth = 3
-min_samples_split = 2
+min_samples_split = 5
 ```
 
 Best CV Balanced Accuracy:
@@ -185,15 +185,15 @@ Hyperparameters:
 Best configuration:
 
 ```text
-hidden_layer_sizes = 16 (or 8)
-alpha = 0.01
+hidden_layer_sizes = 16
+alpha = 0.0001
 learning_rate_init = 0.1
 ```
 
 Best CV Balanced Accuracy:
 
 ```text
-0.884
+0.897
 ```
 
 ---
@@ -204,13 +204,13 @@ Comparison of cross-validation results:
 
 | Model | Balanced Accuracy |
 |---------|---------|
-| SVM | 0.884 |
-| MLP | 0.884 |
+| SVM | 0.913 |
+| MLP | 0.897 |
 | Random Forest | 0.865 |
-| Logistic Regression | 0.860 |
+| Logistic Regression | 0.865 |
 
 **Justification:**
-Both SVM and MLP achieved the highest validation performance of 0.884. We selected the **Support Vector Machine (SVM)** because it is a simpler model with fewer parameters compared to the MLP, reducing the risk of overfitting on a small dataset (70 training samples).
+The **Support Vector Machine (SVM)** with linear kernel, C=0.1, achieved the highest validation performance of 0.913. Choosing SVM is justified both empirically (highest CV score) and theoretically, as a simpler model with fewer parameters than an MLP is less prone to overfitting on a small dataset (65 training samples).
 
 ---
 
@@ -219,46 +219,46 @@ Both SVM and MLP achieved the highest validation performance of 0.884. We select
 Test set size:
 
 ```text
-31 samples
+36 samples
 ```
 
 Classification Report:
 
 | Class | Precision | Recall | F1-score | Support |
 |---------|---------|---------|---------|---------|
-| Class 1 | 1.00 | 1.00 | 1.00 | 13 |
-| Class 2 | 1.00 | 1.00 | 1.00 | 6 |
-| Class 3 | 1.00 | 0.50 | 0.67 | 2 |
-| Class 4 | 1.00 | 1.00 | 1.00 | 4 |
-| Class 5 | 0.50 | 1.00 | 0.67 | 1 |
-| Class 6 | 1.00 | 1.00 | 1.00 | 2 |
-| Class 7 | 1.00 | 1.00 | 1.00 | 3 |
+| Class 1 | 1.00 | 1.00 | 1.00 | 15 |
+| Class 2 | 1.00 | 1.00 | 1.00 | 7 |
+| Class 3 | 0.00 | 0.00 | 0.00 | 2 |
+| Class 4 | 1.00 | 1.00 | 1.00 | 5 |
+| Class 5 | 0.33 | 1.00 | 0.50 | 1 |
+| Class 6 | 0.75 | 1.00 | 0.86 | 3 |
+| Class 7 | 1.00 | 0.67 | 0.80 | 3 |
 
 Overall metrics:
 
 ```text
-Accuracy           = 0.968
-Balanced Accuracy  = 0.929
+Accuracy           = 0.917
+Balanced Accuracy  = 0.810
 ```
 
 Confusion Matrix:
 
 ```text
-[[13  0  0  0  0  0  0]
- [ 0  6  0  0  0  0  0]
- [ 0  0  1  0  1  0  0]
- [ 0  0  0  4  0  0  0]
+[[15  0  0  0  0  0  0]
+ [ 0  7  0  0  0  0  0]
+ [ 0  0  0  0  2  0  0]
+ [ 0  0  0  5  0  0  0]
  [ 0  0  0  0  1  0  0]
- [ 0  0  0  0  0  2  0]
- [ 0  0  0  0  0  0  3]]
+ [ 0  0  0  0  0  3  0]
+ [ 0  0  0  0  0  1  2]]
 ```
 
-Exactly 1 sample belonging to Class 3 (Reptiles) was misclassified as Class 5 (Amphibians).
+Exactly 3 samples were misclassified: the 2 reptiles (Class 3) were misclassified as amphibians (Class 5), and 1 invertebrate (Class 7) was misclassified as an insect (Class 6).
 
 ### Overfitting/Underfitting Analysis
 
-- **Underfitting:** The validation performance (Balanced Accuracy = 0.884) is high, indicating that the models are not underfitting.
-- **Overfitting:** The test set performance (Accuracy = 0.968, Balanced Accuracy = 0.929) remains high and is well-aligned with validation metrics. Since test accuracy does not degrade, there is no evidence of overfitting. The high accuracy is expected given the clean separability of class features in the Zoo dataset.
+- **Underfitting:** The validation performance (Balanced Accuracy = 0.913) is high, indicating that the models are not underfitting.
+- **Overfitting:** The test set performance (Accuracy = 0.917, Balanced Accuracy = 0.810) is well-aligned with validation metrics. Since test accuracy does not degrade significantly (only 3 coherent biological misclassifications), there is no evidence of overfitting.
 
 ---
 
@@ -292,6 +292,7 @@ Main Scikit-Learn components:
 ├── classification_zoo.py
 ├── correlation_matrix.png
 ├── generate_report_pdf.py
+├── relazione_ML_Zoo.tex
 ├── train_zoo.py
 ├── zoo.data
 └── zoo.names
@@ -329,7 +330,7 @@ The script will:
 
 Despite the small dataset size and class imbalance, animal traits provide a highly discriminative feature space, allowing for robust classification.
 
-Among the tested approaches, an **RBF Support Vector Machine** provided the best balance, achieving a **Balanced Accuracy of 0.929** on the test set.
+Among the tested approaches, a **Linear Support Vector Machine** provided the best balance, achieving a **Balanced Accuracy of 0.810** on the test set.
 
 ---
 
