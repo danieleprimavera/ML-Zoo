@@ -24,7 +24,7 @@ Due to the class imbalance present in the dataset, special attention was given t
 
 The project uses the **Zoo Dataset**, composed of:
 
-- 101 samples
+- 100 samples
 - 16 input features (15 boolean, 1 numeric)
 - 1 multi-class target variable
 
@@ -59,13 +59,13 @@ Target:
 
 The dataset is highly imbalanced:
 
-- Class 1: ~40.6% (41 instances)
-- Class 2: ~19.8% (20 instances)
-- Class 3: ~5.0% (5 instances)
-- Class 4: ~12.9% (13 instances)
-- Class 5: ~4.0% (4 instances)
-- Class 6: ~7.9% (8 instances)
-- Class 7: ~9.9% (10 instances)
+- Class 1: 40.0% (40 instances)
+- Class 2: 20.0% (20 instances)
+- Class 3: 5.0% (5 instances)
+- Class 4: 13.0% (13 instances)
+- Class 5: 4.0% (4 instances)
+- Class 6: 8.0% (8 instances)
+- Class 7: 10.0% (10 instances)
 
 Because of this, standard accuracy alone is not an appropriate metric.
 
@@ -82,11 +82,11 @@ The following strategies were adopted:
 ### Train/Test Split
 
 - 65% Training Set (65 samples)
-- 35% Test Set (36 samples)
+- 35% Test Set (35 samples)
 - `random_state=0`
 - Stratified sampling
 
-Using a 65/35 split ensures that the test set is large enough to contain samples from all minority classes and provides a realistic estimate of generalization error. A 75/25 split was tested but rejected as it led to an artificially perfect (1.00) test score due to the small size of the test partition.
+Using a 65/35 split ensures that the test set is large enough to contain samples from all minority classes and provides a realistic estimate of generalization error. A 75/25 or 80/20 split was tested but rejected as it led to an artificially perfect (1.00) test score due to the small size of the test partition. In the 65/35 split, minority classes (Amphibians and Reptiles) contain exactly 3 samples in the training set, which allows for stable cross-validation splits, as detailed in the sensitivity analysis.
 
 ### Feature Scaling
 
@@ -104,7 +104,9 @@ The scaler is fitted only on the training set to avoid data leakage.
 
 Four machine learning models were compared using Grid Search with 3-Fold Cross Validation. The choice of cv=3 is dictated by the class sizes (minority classes have exactly 3 samples in the training set), ensuring that every CV fold contains at least one sample of each minority class for stable evaluation metrics.
 
-### 1. Logistic Regression
+### 1. Logistic Regression (Softmax Regression)
+
+*Note: Since the Zoo dataset is a multi-class problem (7 classes), Logistic Regression is implemented as Softmax Regression (multinomial logistic regression) using the softmax function to output probability distributions.*
 
 Hyperparameters:
 
@@ -114,14 +116,14 @@ Hyperparameters:
 Best configuration:
 
 ```text
-C = 1.0
+C = 5e-05
 penalty = l2
 ```
 
 Best CV Balanced Accuracy:
 
 ```text
-0.865
+0.902
 ```
 
 ---
@@ -137,8 +139,8 @@ Hyperparameters:
 Best configuration:
 
 ```text
-kernel = linear
-C = 0.1
+kernel = rbf
+C = 1
 gamma = scale
 ```
 
@@ -161,7 +163,7 @@ Hyperparameters:
 Best configuration:
 
 ```text
-n_estimators = 100
+n_estimators = 150
 max_depth = 3
 min_samples_split = 5
 ```
@@ -169,7 +171,7 @@ min_samples_split = 5
 Best CV Balanced Accuracy:
 
 ```text
-0.865
+0.860
 ```
 
 ---
@@ -185,15 +187,15 @@ Hyperparameters:
 Best configuration:
 
 ```text
-hidden_layer_sizes = 16
+hidden_layer_sizes = 32
 alpha = 0.0001
-learning_rate_init = 0.1
+learning_rate_init = 0.01
 ```
 
 Best CV Balanced Accuracy:
 
 ```text
-0.897
+0.902
 ```
 
 ---
@@ -204,13 +206,13 @@ Comparison of cross-validation results:
 
 | Model | Balanced Accuracy |
 |---------|---------|
-| SVM | 0.913 |
-| MLP | 0.897 |
-| Random Forest | 0.865 |
-| Logistic Regression | 0.865 |
+| SVM (RBF) | 0.913 |
+| Logistic Regression | 0.902 |
+| MLP | 0.902 |
+| Random Forest | 0.860 |
 
 **Justification:**
-The **Support Vector Machine (SVM)** with linear kernel, C=0.1, achieved the highest validation performance of 0.913. Choosing SVM is justified both empirically (highest CV score) and theoretically, as a simpler model with fewer parameters than an MLP is less prone to overfitting on a small dataset (65 training samples).
+The **Support Vector Machine (SVM)** with RBF kernel, C=1.0, achieved the highest validation performance of 0.913. Choosing SVM is justified both empirically (highest CV score) and theoretically, as SVM is robust against overfitting on small datasets compared to complex MLP architectures.
 
 ---
 
@@ -219,46 +221,46 @@ The **Support Vector Machine (SVM)** with linear kernel, C=0.1, achieved the hig
 Test set size:
 
 ```text
-36 samples
+35 samples
 ```
 
 Classification Report:
 
 | Class | Precision | Recall | F1-score | Support |
 |---------|---------|---------|---------|---------|
-| Class 1 | 1.00 | 1.00 | 1.00 | 15 |
+| Class 1 | 1.00 | 1.00 | 1.00 | 14 |
 | Class 2 | 1.00 | 1.00 | 1.00 | 7 |
-| Class 3 | 0.00 | 0.00 | 0.00 | 2 |
+| Class 3 | 0.50 | 0.50 | 0.50 | 2 |
 | Class 4 | 1.00 | 1.00 | 1.00 | 5 |
-| Class 5 | 0.33 | 1.00 | 0.50 | 1 |
-| Class 6 | 0.75 | 1.00 | 0.86 | 3 |
-| Class 7 | 1.00 | 0.67 | 0.80 | 3 |
+| Class 5 | 0.00 | 0.00 | 0.00 | 1 |
+| Class 6 | 1.00 | 1.00 | 1.00 | 3 |
+| Class 7 | 1.00 | 1.00 | 1.00 | 3 |
 
 Overall metrics:
 
 ```text
-Accuracy           = 0.917
-Balanced Accuracy  = 0.810
+Accuracy           = 0.943
+Balanced Accuracy  = 0.786
 ```
 
 Confusion Matrix:
 
 ```text
-[[15  0  0  0  0  0  0]
+[[14  0  0  0  0  0  0]
  [ 0  7  0  0  0  0  0]
- [ 0  0  0  0  2  0  0]
+ [ 0  0  1  0  1  0  0]
  [ 0  0  0  5  0  0  0]
- [ 0  0  0  0  1  0  0]
+ [ 0  0  1  0  0  0  0]
  [ 0  0  0  0  0  3  0]
- [ 0  0  0  0  0  1  2]]
+ [ 0  0  0  0  0  0  3]]
 ```
 
-Exactly 3 samples were misclassified: the 2 reptiles (Class 3) were misclassified as amphibians (Class 5), and 1 invertebrate (Class 7) was misclassified as an insect (Class 6).
+Exactly 2 samples were misclassified: 1 reptile (Class 3) was misclassified as an amphibian (Class 5), and 1 amphibian (Class 5) was misclassified as a reptile (Class 3).
 
 ### Overfitting/Underfitting Analysis
 
 - **Underfitting:** The validation performance (Balanced Accuracy = 0.913) is high, indicating that the models are not underfitting.
-- **Overfitting:** The test set performance (Accuracy = 0.917, Balanced Accuracy = 0.810) is well-aligned with validation metrics. Since test accuracy does not degrade significantly (only 3 coherent biological misclassifications), there is no evidence of overfitting.
+- **Overfitting:** The test set performance (Accuracy = 0.943, Balanced Accuracy = 0.786) is well-aligned with validation metrics. Since test accuracy does not degrade significantly (only 2 coherent biological misclassifications), there is no evidence of overfitting.
 
 ---
 
@@ -330,7 +332,7 @@ The script will:
 
 Despite the small dataset size and class imbalance, animal traits provide a highly discriminative feature space, allowing for robust classification.
 
-Among the tested approaches, a **Linear Support Vector Machine** provided the best balance, achieving a **Balanced Accuracy of 0.810** on the test set.
+Among the tested approaches, a **Support Vector Machine (SVM)** provided the best balance, achieving a **Balanced Accuracy of 0.786** on the test set.
 
 ---
 
